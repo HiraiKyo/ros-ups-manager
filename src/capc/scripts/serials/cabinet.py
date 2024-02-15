@@ -26,16 +26,17 @@ class Cabinet_serial:
     print("[LOG] Connecting to " + __SERIAL_NAME__ + "...")
     try:
       self.serial = serial.Serial(
-        port=self.config.port,
-        baudrate=self.config.baudrate,
-        timeout=self.config.timeout
+        port=self.config["port"],
+        baudrate=self.config["baudrate"],
+        timeout=self.config["timeout"]
       )
       self.serial.open()
       self.is_alive = True
       print("[LOG] Success to connect to " + __SERIAL_NAME__)
-    except:
+    except Exception as e:
       self.is_alive = False
       print("[LOG] Failed to connect to " + __SERIAL_NAME__)
+      print(e)
       
   """ シリアル接続解除
   """
