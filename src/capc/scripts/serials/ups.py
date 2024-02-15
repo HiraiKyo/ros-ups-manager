@@ -27,7 +27,7 @@ TTL_INPUT_DC_DOWN = "LOW"
 class Ups_serial:
   def __init__(self):
     self.config = Config
-    self.is_alive = False
+    self.is_alive = False # FIXME: 何らかの理由でシリアルが閉じられた事を検知して、ここをFalseにしたい
     
   """ シリアル接続
   """
@@ -39,12 +39,13 @@ class Ups_serial:
         baudrate=self.config["baudrate"],
         timeout=self.config["timeout"]
       )
-      self.serial.open()
+      if(self.serial.is_open == False):
+        self.serial.open()
       self.is_alive = True
       print("[LOG] Success to connect to " + __SERIAL_NAME__)
     except Exception as e:
       self.is_alive = False
-      print("[LOG] Failed to connect to " + __SERIAL_NAME__)
+      print("[LOGError] Failed to connect to " + __SERIAL_NAME__)
       print(e)
       
   """ シリアル接続解除

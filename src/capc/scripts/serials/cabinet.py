@@ -30,12 +30,13 @@ class Cabinet_serial:
         baudrate=self.config["baudrate"],
         timeout=self.config["timeout"]
       )
-      self.serial.open()
+      if(self.serial.is_open == False):
+        self.serial.open()
       self.is_alive = True
       print("[LOG] Success to connect to " + __SERIAL_NAME__)
     except Exception as e:
       self.is_alive = False
-      print("[LOG] Failed to connect to " + __SERIAL_NAME__)
+      print("[LOGError] Failed to connect to " + __SERIAL_NAME__)
       print(e)
       
   """ シリアル接続解除
