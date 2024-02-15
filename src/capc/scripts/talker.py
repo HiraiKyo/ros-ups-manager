@@ -17,7 +17,6 @@ class main():
     self.pub.publish(t1)
     rospy.set_param("/watchdog/inner_temp",t1.data)
 
-
   def talker(self):
     rospy.init_node('talker', anonymous=True)
     
@@ -53,9 +52,12 @@ class main():
       rospy.sleep(1)
       
     # FIXME: ROSが落ちたらシリアル接続も解除する？　その場合はここ？
-    # ups.disconnect()
-    # cabinet.disconnect()
+    # self.dispose()
 
+  def dispose(self):
+    self.ups.disconnect()
+    self.cabinet.disconnect()
+    # FIXME: ROSまわりでデストラクタ処理必要？
 
 if __name__ == '__main__':
   try:
