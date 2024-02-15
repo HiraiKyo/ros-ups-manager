@@ -1,0 +1,52 @@
+version: "3"
+
+networks:
+  ros:
+    driver: bridge
+
+services:
+  master:
+    container_name: rosmaster
+    hostname: rosmaster
+    build: ros:noetic
+    tty: true
+    restart: always
+    command: roscore
+    networks:
+      - ros
+
+  talker:
+    container_name: rostalker
+    hostname: rostalker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/root/catkin_ws/src
+    depends_on:
+      - master
+    environment:
+      - "ROS_HOSTNAME=talker"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    command: rosrun roscpp_tutorials listener
+    networks:
+      - ros
+    restart: always
+
+  listener:
+    container_name: roslistener
+    hostname: roslistener
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/root/catkin_ws/src
+    depends_on:
+      - master
+    environment:
+      - "ROS_HOSTNAME=listener"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    command: rosrun roscpp_tutorials listener
+    networks:
+      - ros
+    restart: always

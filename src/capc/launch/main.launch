@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="capc" type="watchdog.py" name="" output="screen">
+    <param name="/config/watchdog/dev_ups" type="str" value="/dev/ttyUSB0" />
+  </node>
+</launch>
+
