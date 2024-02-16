@@ -4,6 +4,7 @@ import rospy
 from std_msgs.msg import Float32 as Float
 from serials.cabinet import Cabinet_serial
 from serials.ups import Ups_serial
+from common.color import Color
 
 class main():
   def __init__(self):
@@ -17,7 +18,7 @@ class main():
       }
       self.config.update(rospy.get_param("/config/watchdog"))
     except Exception as e:
-      print("get_param exception:",e.args)
+      print(f"{Color.YELLOW}[LOGWarn] get_param exception: {e.args} {Color.RESET}")
 
     self.cabinet = Cabinet_serial(self.config)
     self.ups = Ups_serial(self.config, self.cabinet.errorUpdate)

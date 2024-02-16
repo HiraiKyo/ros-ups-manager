@@ -3,7 +3,7 @@
 import serial
 from serial.tools import list_ports
 import time
-
+from ..common.color import Color
 
 __SERIAL_NAME__ = "Arduino cabinet monitor"
 
@@ -56,7 +56,7 @@ class Cabinet_serial:
       print("[LOG] Success to connect to " + __SERIAL_NAME__)
     except Exception as e:
       self.is_alive = False
-      print("[LOGError] Failed to connect to " + __SERIAL_NAME__)
+      print(f"{Color.RED}[LOGError] Failed to connect to {__SERIAL_NAME__} {Color.RESET}")
       print(e)
       
   """ シリアル接続解除

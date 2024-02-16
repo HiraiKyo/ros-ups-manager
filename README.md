@@ -37,3 +37,8 @@ UPS Power Unit Manager for Nipron, on ROS System. (ROS1 Noetic)
 ### Format example
 
 `inner_temp=22.1231245`
+
+## TODO:
+
+- Talker を Ctrl+c で終了したのちに再度`roslaunch`を実行すると、シリアル接続時にタイムアウトエラーになる。
+- 自動シャットダウンが実行されない

@@ -3,6 +3,7 @@
 import serial
 from serial.tools import list_ports
 import subprocess
+from ..common.color import Color 
 
 __SERIAL_NAME__ = "UPS power unit"
 
@@ -49,10 +50,10 @@ class Ups_serial:
       if(self.serial.is_open == False):
         self.serial.open()
       self.is_alive = True
-      print("[LOG] Success to connect to " + __SERIAL_NAME__)
+      print(f"[LOG] Success to connect to {__SERIAL_NAME__}")
     except Exception as e:
       self.is_alive = False
-      print("[LOGError] Failed to connect to " + __SERIAL_NAME__)
+      print(f"{Color.RED}[LOG]Failed to connect to {__SERIAL_NAME__} {Color.RESET}")
       print(e)
       
   """ シリアル接続解除
@@ -70,6 +71,7 @@ class Ups_serial:
       print("[LOG] Shutdowning...")
       subprocess.call(["shutdown", "-t", "1"]) # FIXME: 動いていない？ROSからPCシャットダウンリクエストはどう送る？
     except:
+      print(f"{Color.RED}[LOGError] Shutdown error. {Color.RESET}")
       return False
     
   """ バッテリー駆動状態かどうか取得
