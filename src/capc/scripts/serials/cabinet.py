@@ -4,21 +4,41 @@ import serial
 from serial.tools import list_ports
 import time
 
-Config = {
-  "port": "/dev/ttyACM0",
-  "baudrate": 9600,
-  "timeout": 1 # 秒？ミリ秒？
-}
 
 __SERIAL_NAME__ = "Arduino cabinet monitor"
 
 """ キャビネット監視用Arduino通信管理クラス
 """
 class Cabinet_serial:
-  def __init__(self):
-    self.config = Config
+  def __init__(self, config):
+    self.config = config
     self.is_alive = False
     self.temperature = 0 # 内部温度
+    self.__error = {
+      "shutdowner": False # Falseはエラー状態とする
+    }
+  
+  # エラー管理
+  "getter"
+  @property
+  def error(self):
+    return self.__error
+  
+  "setter"
+  def errorUpdate(self, dict):
+    for k in dict.keys():
+      self.__error[k] = dict[k]
+    # Python側で点灯ルールを指定、Arduino側で点灯パターン列挙のみ
+    errorCount = 0
+    for k in self.error.keys():
+      if self.error[k] == False:
+        errorCount += 1
+    msg = ""
+    if errorCount > 0:
+      msg = "error=1"
+    else:
+      msg = "error=0"
+    self.serial.write(bytes(msg,'UTF-8'))
     
   """ シリアル接続
   """
@@ -26,7 +46,7 @@ class Cabinet_serial:
     print("[LOG] Connecting to " + __SERIAL_NAME__ + "...")
     try:
       self.serial = serial.Serial(
-        port=self.config["port"],
+        port=self.config["dev_cab"],
         baudrate=self.config["baudrate"],
         timeout=self.config["timeout"]
       )
@@ -75,22 +95,13 @@ class Cabinet_serial:
   
   """ バッテリー残量低下
   """
-  # FIXME: Python側で点灯ルールを指定すべきか？
+  # Python側で点灯ルールを指定、Arduino側で点灯パターン列挙のみ
   def set_battery_state(self, is_low):
     msg = ""
     if is_low == True:
-      msg = "battery_status=0"
+      msg = "battery=0"
     else:
-      msg = "battery_status=1"
+      msg = "battery=1"
     self.serial.write(bytes(msg,'UTF-8'))
   
-  """ シャットダウンスクリプトの生存
-  """
-  # FIXME: Python側で点灯ルールを指定すべきか？
-  def set_shutdowner_state(self, is_alive):
-    msg = ""
-    if is_alive == True:
-      msg = "shutdowner=1"
-    else:
-      msg = "shutdowner=0"
-    self.serial.write(bytes(msg, 'UTF-8'))
+

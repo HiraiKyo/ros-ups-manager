@@ -16,3 +16,24 @@ UPS Power Unit Manager for Nipron, on ROS System. (ROS1 Noetic)
 # 非機能要件
 
 - シリアル通信の再接続処理
+
+# データプロトコル
+
+## Arduino( from PC )
+
+| key | values | params |
+| battery | 0, 1 | 0: 点滅, 1: 点灯 |
+| error | 0, 1, 2 | 0: 消灯, 1: 点灯, 2: 点灯 |
+
+### Format example
+
+`battery=1`
+
+## Arduino( to PC )
+
+| key | values | params |
+| inner_temp | float | 0: default param |
+
+### Format example
+
+`inner_temp=22.1231245`

@@ -4,12 +4,6 @@ import serial
 from serial.tools import list_ports
 import subprocess
 
-Config = {
-  "port": "/dev/ttyUSB0",
-  "baudrate": 9600,
-  "timeout": 1
-}
-
 __SERIAL_NAME__ = "UPS power unit"
 
 # UPS電源設定項目
@@ -25,17 +19,30 @@ TTL_INPUT_DC_DOWN = "LOW"
 """ UPS電源通信管理クラス
 """
 class Ups_serial:
-  def __init__(self):
-    self.config = Config
-    self.is_alive = False # FIXME: 何らかの理由でシリアルが閉じられた事を検知して、ここをFalseにしたい
-    
+  def __init__(self, config, errorCallback):
+    self.config = config
+    self.errorCallback = aliveCallback
+    self.__is_alive = False # 何らかの理由でシリアルが閉じられた事を検知して、ここをFalseにしたい
+      
+  "getter"
+  @property
+  def is_alive(self):
+    return self.__is_alive
+  
+  "setter"
+  @is_alive.setter
+  def is_alive(self, value):
+    self.__is_alive = value
+    # UPS電源とのシリアル通信が切断された事をArduinoに通知する
+    self.errorCallback({ "shutdowner": value })
+
   """ シリアル接続
   """
   def connect(self):
     print("[LOG] Connecting to " + __SERIAL_NAME__ + "...")
     try:
       self.serial = serial.Serial(
-        port=self.config["port"],
+        port=self.config["dev_ups"],
         baudrate=self.config["baudrate"],
         timeout=self.config["timeout"]
       )
@@ -61,24 +68,25 @@ class Ups_serial:
   def shutdown(self):
     try:
       print("[LOG] Shutdowning...")
-      subprocess.call(["shutdown", "-t", "1"]) # Dockerコンテナ内からこれの動作確認はできない？
+      subprocess.call(["shutdown", "-t", "1"]) # FIXME: 動いていない？ROSからPCシャットダウンリクエストはどう送る？
     except:
       return False
     
   """ バッテリー駆動状態かどうか取得
   """
   def is_battery_mode(self):
-    if self.is_alive == True: # TODO: 生きてないときにエラー処理
+    if self.is_alive == True: 
       is_powered = self.serial.cts # FIXME: シリアル通信が来なかった時にTimeout文だけ待ってしまう？受信できない場合にEOFの例外処理が必要か？
       if is_powered == CTS_OUTPUT_AC_DOWN:
         return True
       if is_powered == CTS_OUTPUT_AC_FINE:
         return False
       
+      
   """ バッテリー充電状態を取得
   """
   def is_battery_fine(self):
-    if self.is_alive == True: # TODO: 生きてないときにエラー処理
+    if self.is_alive == True: 
       is_charged = self.serial.cd
       if is_charged == DCD_OUTPUT_BATTERY_FINE:
         return True

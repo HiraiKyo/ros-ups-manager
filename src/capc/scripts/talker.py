@@ -7,11 +7,25 @@ from serials.ups import Ups_serial
 
 class main():
   def __init__(self):
-    self.cabinet = Cabinet_serial()
-    self.ups = Ups_serial()
+    # Config loader
+    try:
+      self.config = {
+        "dev_cab": "/dev/ttyACM0",
+        "dev_ups": "/dev/ttyUSB0",
+        "baudrate": 9600,
+        "timeout": 1 # 秒？ミリ秒？
+      }
+      self.config.update(rospy.get_param("/config/watchdog"))
+    except Exception as e:
+      print("get_param exception:",e.args)
+
+    self.cabinet = Cabinet_serial(self.config)
+    self.ups = Ups_serial(self.config, self.cabinet.errorUpdate)
     self.pub = rospy.Publisher('/watchdog/inner_temp',Float,queue_size=1)
     self.talker()
     
+  """Publisher用メソッド
+  """
   def cb_cyclic(self, ev):
     print("watchdog::cyclic call back")
     t1=Float()
@@ -19,14 +33,10 @@ class main():
     self.pub.publish(t1)
     rospy.set_param("/watchdog/inner_temp",t1.data)
 
+  """Talker立ち上げ用メソッド
+  """
   def talker(self):
     rospy.init_node('talker', anonymous=True)
-    
-    # TODO: Config loader
-    # try:
-    #   Config.update(rospy.get_param("/config/watchdog"))
-    # except Exception as e:
-    #   print("get_param exception:",e.args)
     
     # Connection
     self.cabinet.connect()
@@ -37,7 +47,14 @@ class main():
     while not rospy.is_shutdown():
       print("watchdog::main loop")
 
-      # TODO: シリアル通信の再接続処理
+      # シリアル通信の再接続処理
+      try:
+        if self.cabinet.is_alive == False:
+          self.cabinet.connect()
+        if self.ups.is_alive == False:
+          self.ups.connect()
+      except Exception as e:
+        print(e)
       
       # バッテリーモードへの変更を検知してシャットダウン処理を実行
       mode = self.ups.is_battery_mode()
@@ -48,15 +65,17 @@ class main():
       is_low = self.ups.is_battery_fine()
       self.cabinet.set_battery_state(is_low)
       
-      # シャットダウンスクリプトが生存しているかをキャビネット前面に通知
-      is_alive = True # TODO: スクリプトが実行状態かどうかの判定方法
-      self.cabinet.set_shutdowner_state(is_alive)
       rospy.sleep(1)
       
     # FIXME: ROSが落ちたらシリアル接続も解除する？　その場合はここ？
-    # self.dispose()
+    self.dispose()
 
+  """UPS Manager終了処理
+  """
   def dispose(self):
+    # 自動シャットダウンスクリプトの停止をキャビネット前面に通知
+    self.cabinet.set_shutdowner_state(False)
+    
     self.ups.disconnect()
     self.cabinet.disconnect()
     # FIXME: ROSまわりでデストラクタ処理必要？
