@@ -61,6 +61,7 @@ class main():
       mode = self.ups.is_battery_mode()
       if mode == True:
         self.ups.shutdown()
+        break # シャットダウン処理実行後は再ローンチ以外で復帰する方法なし
 
       # バッテリー残量低下をキャビネット前面に通知
       is_low = self.ups.is_battery_fine()
