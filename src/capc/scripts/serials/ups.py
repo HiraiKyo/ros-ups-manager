@@ -21,7 +21,7 @@ TTL_INPUT_DC_DOWN = "LOW"
 class Ups_serial:
   def __init__(self, config, errorCallback):
     self.config = config
-    self.errorCallback = aliveCallback
+    self.errorCallback = errorCallback
     self.__is_alive = False # 何らかの理由でシリアルが閉じられた事を検知して、ここをFalseにしたい
       
   "getter"
