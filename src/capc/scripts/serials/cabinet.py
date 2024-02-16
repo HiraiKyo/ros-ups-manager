@@ -87,7 +87,7 @@ class Cabinet_serial:
         print("[LOG] No data has been sent from " + __SERIAL_NAME__)
         return 0
       lastline = lines[-1]
-      self.temperature = float(lastline.decode().replace("inner_temp=", ""))
+      self.temperature = float(lastline.replace("inner_temp=", ""))
       return self.temperature
     else:
       print("[LOG] Please connect first.")
